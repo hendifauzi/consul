@@ -58,8 +58,8 @@ test: dev
 	@grep '^PASS' test.log | uniq || true
 	@grep -A1 -- '--- FAIL:' test.log || true
 	@grep '^FAIL' test.log || true
-	@test "$$TRAVIS" == "true" && cat test.log
-	@exit `cat exit-code`
+	@test "$$TRAVIS" == "true" && cat test.log || true
+	@exit $$(cat exit-code)
 
 test-race:
 	$(MAKE) GOTEST_FLAGS=-race
