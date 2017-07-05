@@ -50,11 +50,16 @@ cov:
 
 test: dev
 	go test -i ./...
-	( set -o pipefail ; go test -timeout 7m -v ./... 2>&1 | tee test.log )
+	go test $(GOTEST_FLAGS) -timeout 7m -v ./... 2>&1 >test$(GOTEST_FLAGS).log ; echo "Exit code: $$?" >> test$(GOTEST_FLAGS).log
+	@echo "----"
+	@grep -A5 'DATA RACE' test.log || true
+	@grep -A10 'panic: test timed out' test.log || true
+	@grep '^PASS' test.log | uniq || true
+	@grep -A1 -- '--- FAIL:' test.log || true
+	@grep '^FAIL' test.log || true
 
-test-race: dev
-	go test -i -run '^$$' ./...
-	( set -o pipefail ; go test -race -timeout 7m -v ./... 2>&1 | tee test-race.log )
+test-race:
+	$(MAKE) GOTEST_FLAGS=-race
 
 cover:
 	go test $(GOFILES) --cover
