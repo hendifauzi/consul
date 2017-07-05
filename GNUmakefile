@@ -50,13 +50,16 @@ cov:
 
 test: dev
 	go test -i ./...
-	go test $(GOTEST_FLAGS) -timeout 7m -v ./... 2>&1 >test$(GOTEST_FLAGS).log ; echo "Exit code: $$?" >> test$(GOTEST_FLAGS).log
+	go test $(GOTEST_FLAGS) -timeout 7m -v ./... 2>&1 >test$(GOTEST_FLAGS).log ; echo $$? > exit-code
+	@echo "Exit code: `cat exit-code`" >> test$(GOTEST_FLAGS).log
 	@echo "----"
+	@test "$$TRAVIS" == "true" && cat test.log
 	@grep -A5 'DATA RACE' test.log || true
 	@grep -A10 'panic: test timed out' test.log || true
 	@grep '^PASS' test.log | uniq || true
 	@grep -A1 -- '--- FAIL:' test.log || true
 	@grep '^FAIL' test.log || true
+	@exit `cat exit-code`
 
 test-race:
 	$(MAKE) GOTEST_FLAGS=-race
