@@ -50,15 +50,11 @@ cov:
 
 test: dev
 	go test -i ./...
-	> test.log
-	# for p in $$(go list ./... | grep -v vendor) ; do go test -timeout 3m -v $$p >> test.log 2>&1 || echo 'FAIL_TOKEN' >> test.log ; done
-	go test -v ./... > test.log 2>&1 || echo 'FAIL_TOKEN' >> test.log
-	@if [ "$$TRAVIS" == "true" ] ; then cat test.log ; fi
-	@if grep -q 'FAIL_TOKEN' test.log ; then grep 'FAIL:' test.log ; exit 1 ; else echo 'PASS' ; fi
+	( set -o pipefail ; go test -timeout 7m -v ./... 2>&1 | tee test.log )
 
 test-race: dev
 	go test -i -run '^$$' ./...
-	( set -o pipefail ; go test -race -v ./... 2>&1 | tee test-race.log )
+	( set -o pipefail ; go test -race -timeout 7m -v ./... 2>&1 | tee test-race.log )
 
 cover:
 	go test $(GOFILES) --cover
